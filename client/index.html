@@ -52,7 +52,7 @@
                         </svg>
                         <el-dropdown-menu slot="dropdown">
                             <el-dropdown-item class="menuItem">
-                                <div @click="clickDeviceConfig">设置</div>
+                                <div @click="clickDeviceConfig(drive)">设置</div>
                             </el-dropdown-item>
                             <el-dropdown-item class="menuItem">
                                 <div @click="clickDeviceDelete(drive)">删除</div>
@@ -72,7 +72,8 @@
         var electron = require("electron")
         var remote = electron.remote
         var ipcRenderer = electron.ipcRenderer
-        var factories = remote.require("./api").factories
+        var api = remote.require("./api")
+        var factories = api.factories
         var vm = new Vue({
             el: '#content',
             data: {
@@ -85,25 +86,32 @@
                 addPigDrive: function (factory) {
                     ipcRenderer.send('createNewPigDrive', factory.name)
                 },
-                clickConfig: function (id) {
-                    alert(id)
-                },
-                clickDeviceConfig: function () {
+                clickDeviceConfig: function (drive) {
+                    ipcRenderer.send('configDrive', drive.id)
                 },
                 clickDeviceDelete: function (drive) {
                     ipcRenderer.send('deleteDrive', drive.id)
                 },
-                exit:function(){
+                exit: function () {
                     ipcRenderer.send('exit')
                 }
             }
         })
-        ipcRenderer.on('NewPigDrive', (event, drive) => {
-            vm.drives.push(drive)
-        })
-        ipcRenderer.on('RemoveDrive', (event, id) => {
-            let index = vm.drives.findIndex(v => v.id == id)
-            vm.drives.splice(index, 1)
+        ipcRenderer.on("DrivesUpdated", (event) => {
+            let drives = api.drives
+            vm.drives.splice(0)
+            for (let drive of drives) {
+                vm.drives.push({
+                    id: drive.id,
+                    name: drive.name,
+                    factory: {
+                        name: drive.factory.name,
+                        displayName: drive.factory.displayName,
+                        imageUrl: drive.factory.imageUrl
+                    },
+                    detail: drive.detail
+                })
+            }
         })
     </script>
 </body>

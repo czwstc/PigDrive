@@ -2,3 +2,5 @@
 /out/
 /*.js
 /factory/*.js
+*.map
+*.d.ts

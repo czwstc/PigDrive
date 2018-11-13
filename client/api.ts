@@ -83,21 +83,50 @@ export namespace errors {
     export class CreateNewDriveError extends Error { }
 }
 
-export abstract class PigDrive {
+export interface ConfigPage {
+    name: string
+    url: string
+}
 
+export interface CommonConfig {
+    [key: string]: any
+    name?: string
+    mountPath?: string
+    autoMount?: boolean
+}
+
+export abstract class PigDrive {
     id = new Date().getTime();
     abstract name: string;
     abstract factory: PigDriveFactory;
     abstract detail: string;
+    commonConfig: CommonConfig = {};
+    get commonConfigFilePath(): string {
+        return pathLib.join(this.getConfigPath(), "common.json")
+    }
     abstract saveConfig(): void;
+    _saveConfig(): void {
+        this.saveConfig()
+        fs.writeFileSync(this.commonConfigFilePath, JSON.stringify(this.commonConfig), { flag: "w+" })
+    }
     abstract async delete(): Promise<void>;
+    abstract listConfigPages(): ConfigPage[];
     getConfigPath(): string {
         return utils.getPigDriveConfigDirPath(this)
+    }
+
+    showConfigWindow() {
+        let configWindow = new BrowserWindow({ width: 800, height: 600 })
+        configWindow.loadFile("config.html")
+        configWindow.webContents.executeJavaScript(`var driveID=${this.id}`)
+        // configWindow.webContents.openDevTools()
     }
 
     static async del(drive: PigDrive): Promise<void> {
         await drive.delete()
         utils.rm(drive.getConfigPath())
+        let index = drives.findIndex(v => v.id == drive.id)
+        drives.splice(index, 1)
         console.log(`刪除${drive.factory.displayName}(${drive.name})成功`)
     }
 

@@ -4,7 +4,7 @@ import { EventEmitter } from "events";
 import request = require("request");
 import pathLib from "path"
 import PCS from "baidupanapi"
-import { existsSync } from "fs";
+import fs from "fs";
 
 export class BaiduYunFactory implements api.PigDriveFactory {
     name = "BaiduYun";
@@ -18,7 +18,7 @@ export class BaiduYunFactory implements api.PigDriveFactory {
     }
     loadFromConfig(id: number): Promise<api.PigDrive> {
         return new Promise<api.PigDrive>((resolve, reject) => {
-            let drive = new BaiduYunDrive("百度云", this)//TODO
+            let drive = new BaiduYunDrive(this)//TODO
             drive.id = id
             let pcs = new PCS(() => drive.getJar())
             pcs.init.then(() => {
@@ -33,21 +33,28 @@ export class BaiduYunFactory implements api.PigDriveFactory {
 
 export class BaiduYunDrive extends api.PigDrive {
     id = new Date().getTime()
-    name: string;
+    get name(): string {
+        if (this.commonConfig && this.commonConfig.name)
+            return this.commonConfig.name
+        else return "百度云"
+    };
     factory: api.PigDriveFactory;
     pcs?: PCS;
     get detail() {
-        return this.id + ""
+        if (this.commonConfig.mountPath)
+            return this.commonConfig.mountPath
+        else return this.id + ""
     }
 
-    constructor(name: string, factory: api.PigDriveFactory) {
+    constructor(factory: api.PigDriveFactory) {
         super()
-        this.name = name;
         this.factory = factory
+        if (!this.commonConfig.name) {
+            this.commonConfig.name = this.factory.displayName
+        }
     }
 
     saveConfig(): void {
-        // throw new Error("Method not implemented.");
     }
 
     getJar() {
@@ -81,6 +88,10 @@ export class BaiduYunDrive extends api.PigDrive {
             }, 1000)
             eventEmmiter.once('return', () => { clearInterval(iid) })
         })
+    }
+
+    listConfigPages(): api.ConfigPage[] {
+        return []
     }
 
     async delete() {

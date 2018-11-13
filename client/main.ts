@@ -12,10 +12,11 @@ ipcMain.on('createNewPigDrive', (_: any, factoryName: string) => {
         factory.createNewPigDrive({
             mainWindow: win
         }).then((pigDrive) => {
+            api.drives.push(pigDrive)
             let configDir = pigDrive.getConfigPath()
             api.utils.mkdirs(configDir)
-            pigDrive.saveConfig()
-            sendNewPigDrive(pigDrive)
+            pigDrive._saveConfig()
+            sendDrivesUpdated()
             console.log(`新建${factory.displayName}(${pigDrive.name})成功`)
         }).catch(e => {
             if (e == null) {
@@ -33,35 +34,36 @@ ipcMain.on('createNewPigDrive', (_: any, factoryName: string) => {
 })
 
 ipcMain.on('deleteDrive', (_: any, driveID: number) => {
-    console.log(driveID)
     let drive = api.PigDrive.findByID(driveID)
     if (drive) {
-        api.PigDrive.del(drive).then(() => sendRemoveDrive(driveID)).catch(console.error)
+        api.PigDrive.del(drive).then(sendDrivesUpdated).catch(console.error)
     }
+})
+
+ipcMain.on('configDrive', (_: any, driveID: number) => {
+    let drive = api.PigDrive.findByID(driveID)
+    if (drive) {
+        drive.showConfigWindow()
+    }
+})
+
+ipcMain.on('updateDriveCommonConfig', (_: any, driveID: number, commonConfig: any) => {
+    let drive = api.PigDrive.findByID(driveID)
+    if (drive) {
+        for (let key in commonConfig)
+            drive.commonConfig[key] = commonConfig[key]
+        drive._saveConfig()
+    }
+    sendDrivesUpdated()
 })
 
 ipcMain.on('exit', () => {
     app.quit()
 })
 
-function sendNewPigDrive(drive: api.PigDrive) {
+function sendDrivesUpdated() {
     if (win)
-        win.webContents.send("NewPigDrive", {
-            id: drive.id,
-            name: drive.name,
-            factory: {
-                name: drive.factory.name,
-                displayName: drive.factory.displayName,
-                imageUrl: drive.factory.imageUrl
-            },
-            detail: drive.detail
-        })
-}
-
-function sendRemoveDrive(driveID: number) {
-    console.log(driveID)
-    if (win)
-        win.webContents.send("RemoveDrive", driveID)
+        win.webContents.send("DrivesUpdated")
 }
 
 function loadPigDriveFactories() {
@@ -78,8 +80,11 @@ function loadPigDrives() {
                     if (err) return console.error(err)
                     for (let f of files) {
                         factory.loadFromConfig(parseInt(f)).then(drive => {
+                            let commonFile = pathLib.join(drive.getConfigPath(), "common.json")
+                            if (fs.existsSync(commonFile))
+                                drive.commonConfig = JSON.parse(fs.readFileSync(commonFile).toString("utf-8"))
                             api.drives.push(drive)
-                            sendNewPigDrive(drive)
+                            sendDrivesUpdated()
                             console.log(`成功加载${drive.factory.displayName}(${drive.name})`)
                         }).catch(console.error)
                     }

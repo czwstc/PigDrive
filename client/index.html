@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>PigDrive</title>
+    <script src="js/vue.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/iview.css">
+    <script type="text/javascript" src="js/iview.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/index.css">
+    <link rel="stylesheet" type="text/css" href="css/element.css">
+    <script type="text/javascript" src="js/element-ui.js"></script>
+
+</head>
+
+<body>
+    <div id="content">
+        <div id="header">
+            <svg id="headMenu" viewBox="0 0 1024 1024" width="200" height="200" @click="drawerOpened=true">
+                <path d="M950.800896 768.016384l0 73.138176q0 14.856192-10.856448 25.71264t-25.71264 10.856448l-804.519936 0q-14.856192 0-25.71264-10.856448t-10.856448-25.71264l0-73.138176q0-14.856192 10.856448-25.71264t25.71264-10.856448l804.519936 0q14.856192 0 25.71264 10.856448t10.856448 25.71264zm0-292.552704l0 73.138176q0 14.856192-10.856448 25.71264t-25.71264 10.856448l-804.519936 0q-14.856192 0-25.71264-10.856448t-10.856448-25.71264l0-73.138176q0-14.856192 10.856448-25.71264t25.71264-10.856448l804.519936 0q14.856192 0 25.71264 10.856448t10.856448 25.71264zm0-292.552704l0 73.138176q0 14.856192-10.856448 25.71264t-25.71264 10.856448l-804.519936 0q-14.856192 0-25.71264-10.856448t-10.856448-25.71264l0-73.138176q0-14.856192 10.856448-25.71264t25.71264-10.856448l804.519936 0q14.856192 0 25.71264 10.856448t10.856448 25.71264z"
+                    p-id="1097"></path>
+            </svg>
+            <div id="headContent">
+                <h1 class="defaultText">PigDrive</h1>
+            </div>
+            <el-dropdown class="headDropDown" trigger="click">
+                <svg id="headAdd" viewBox="0 0 1024 1024" width="200" height="200">
+                    <path d="M896 448H576V128c0-35.2-28.8-64-64-64s-64 28.8-64 64v320H128c-35.2 0-64 28.8-64 64s28.8 64 64 64h320v320c0 35.2 28.8 64 64 64s64-28.8 64-64V576h320c35.2 0 64-28.8 64-64s-28.8-64-64-64z"
+                        fill="" p-id="1814"></path>
+                </svg>
+                <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item v-for="factory in factories" class="menuItem">
+                        <div @click="addPigDrive(factory)">{{factory.displayName}}</div>
+                    </el-dropdown-item>
+                </el-dropdown-menu>
+            </el-dropdown>
+        </div>
+        <div id="body">
+            <div class="card" v-for="drive in drives">
+                <img :src="drive.factory.imageUrl" class="cardIcon">
+                <div class="cardContent">
+                    <h1 class="cardText">{{drive.name}}</h1>
+                    <h3 class="cardText">{{drive.detail}}</h5>
+                </div>
+                <div>
+                    <el-dropdown class="card_config">
+                        <svg class="card_config logoColor" viewBox="0 0 1024 1024" width="200" height="200">
+                            <path d="M514.048 572.416c-35.84 0-63.488-28.672-63.488-64.512s28.672-64.512 63.488-64.512 63.488 28.672 63.488 64.512c1.024 35.84-27.648 64.512-63.488 64.512zM674.816 572.416c-35.84 0-63.488-28.672-63.488-64.512s28.672-64.512 63.488-64.512 63.488 28.672 63.488 64.512-29.696 64.512-63.488 64.512zM870.4 551.936c-22.528 0-39.936-17.408-39.936-39.936s17.408-39.936 39.936-39.936c21.504 0 39.936 17.408 39.936 39.936s-18.432 39.936-39.936 39.936zM353.28 572.416c-35.84 0-63.488-28.672-63.488-64.512s28.672-64.512 63.488-64.512 63.488 28.672 63.488 64.512-27.648 64.512-63.488 64.512z"
+                                p-id="1255"></path>
+                            <path d="M855.04 575.488c-17.408 0-32.768 12.288-37.888 28.672-39.936 130.048-159.744 225.28-303.104 225.28-176.128 0-317.44-143.36-317.44-320.512s143.36-320.512 317.44-320.512c141.312 0 263.168 95.232 303.104 226.304 5.12 16.384 19.456 28.672 37.888 28.672 21.504 0 39.936-17.408 39.936-39.936 0-4.096-1.024-8.192-2.048-11.264-49.152-163.84-200.704-281.6-378.88-281.6-219.136 0-396.288 179.2-396.288 398.336s178.176 398.336 396.288 398.336c175.104 0 324.608-114.688 376.832-274.432 2.048-5.12 4.096-10.24 4.096-16.384-1.024-23.552-18.432-40.96-39.936-40.96z"
+                                p-id="1256"></path>
+                        </svg>
+                        <el-dropdown-menu slot="dropdown">
+                            <el-dropdown-item class="menuItem">
+                                <div @click="clickDeviceConfig">设置</div>
+                            </el-dropdown-item>
+                            <el-dropdown-item class="menuItem">
+                                <div @click="clickDeviceDelete(drive)">删除</div>
+                            </el-dropdown-item>
+                        </el-dropdown-menu>
+                    </el-dropdown>
+                </div>
+            </div>
+        </div>
+        <drawer placement="left" :closable="false" v-model="drawerOpened" style="overflow-x:hidden;">
+            <div class="drawerItem" @click="exit">
+                退出
+            </div>
+        </drawer>
+    </div>
+    <script type="text/javascript">
+        var electron = require("electron")
+        var remote = electron.remote
+        var ipcRenderer = electron.ipcRenderer
+        var factories = remote.require("./api").factories
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                title: "a",
+                factories: factories,
+                drives: [],
+                drawerOpened: false
+            },
+            methods: {
+                addPigDrive: function (factory) {
+                    ipcRenderer.send('createNewPigDrive', factory.name)
+                },
+                clickConfig: function (id) {
+                    alert(id)
+                },
+                clickDeviceConfig: function () {
+                },
+                clickDeviceDelete: function (drive) {
+                    ipcRenderer.send('deleteDrive', drive.id)
+                },
+                exit:function(){
+                    ipcRenderer.send('exit')
+                }
+            }
+        })
+        ipcRenderer.on('NewPigDrive', (event, drive) => {
+            vm.drives.push(drive)
+        })
+        ipcRenderer.on('RemoveDrive', (event, id) => {
+            let index = vm.drives.findIndex(v => v.id == id)
+            vm.drives.splice(index, 1)
+        })
+    </script>
+</body>
+
+</html>

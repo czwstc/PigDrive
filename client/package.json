@@ -1,0 +1,23 @@
+{
+  "name": "pigdrive",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "electron .",
+    "start": "chcp 65001 && electron .",
+    "package":"electron-packager . PigDrive --win --out ./out/"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/request": "^2.48.1",
+    "electron": "^3.0.8",
+    "vue": "^2.5.17"
+  },
+  "dependencies": {
+    "baidupanapi": "^1.2.0",
+    "request": "^2.88.0",
+    "tough-cookie-filestore": "0.0.1"
+  }
+}

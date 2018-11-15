@@ -18,7 +18,7 @@ export class BaiduYunFactory implements api.PigDriveFactory {
     }
     loadFromConfig(id: number): Promise<api.PigDrive> {
         return new Promise<api.PigDrive>((resolve, reject) => {
-            let drive = new BaiduYunDrive(this)//TODO
+            let drive = new BaiduYunDrive(this)
             drive.id = id
             let pcs = new PCS(() => drive.getJar())
             pcs.init.then(() => {
@@ -68,6 +68,7 @@ export class BaiduYunDrive extends api.PigDrive {
                 },
                 show: false
             })
+            api.setupWindow(loginWindow)
             loginWindow.loadURL("https://pan.baidu.com")
             let eventEmmiter = new EventEmitter()
             eventEmmiter.once('resolve', (value) => resolve(value))

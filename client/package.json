@@ -6,7 +6,7 @@
   "scripts": {
     "test": "electron .",
     "start": "chcp 65001 && electron .",
-    "package":"electron-packager . PigDrive --win --out ./out/ --overwrite"
+    "package": "electron-packager . PigDrive --win --out ./out/ --overwrite --icon img/favicon_circle.ico"
   },
   "author": "",
   "license": "ISC",
@@ -16,7 +16,7 @@
     "vue": "^2.5.17"
   },
   "dependencies": {
-    "baidupanapi": "^1.2.0",
+    "baidupanapi": "^1.2.1",
     "request": "^2.88.0",
     "tough-cookie-filestore": "0.0.1"
   }

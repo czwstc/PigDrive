@@ -1,16 +1,14 @@
-import { app, BrowserWindow, Menu, ipcMain, dialog } from "electron"
+import { app, Menu, ipcMain, dialog } from "electron"
 import * as api from "./api"
 import { BaiduYunFactory } from "./factory/baiduyun";
 import * as pathLib from "path"
 import * as fs from "fs"
 
-let win: BrowserWindow | null
-
 ipcMain.on('createNewPigDrive', (_: any, factoryName: string) => {
     let factory = api.findPigDriveFactoryByName(factoryName) as api.PigDriveFactory
     if (factory) {
         factory.createNewPigDrive({
-            mainWindow: win
+            mainWindow: api.mainWindow
         }).then((pigDrive) => {
             api.drives.push(pigDrive)
             let configDir = pigDrive.getConfigPath()
@@ -58,21 +56,24 @@ ipcMain.on('updateDriveCommonConfig', (_: any, driveID: number, commonConfig: an
 })
 
 ipcMain.on('exit', () => {
-    app.quit()
+    api.exit()
 })
 
 function sendDrivesUpdated() {
-    if (win)
-        win.webContents.send("DrivesUpdated")
+    if (api.mainWindow)
+        api.mainWindow.webContents.send("DrivesUpdated")
 }
 
 function loadPigDriveFactories() {
+    api.factories.splice(0)
     api.factories.push(new BaiduYunFactory())
 }
 
 function loadPigDrives() {
     fs.readdir(api.configPath, (err, files) => {
         if (err) return console.error(err)
+        api.drives.splice(0)
+        sendDrivesUpdated()
         for (let file of files) {
             let factory = api.findPigDriveFactoryByName(file) as api.PigDriveFactory
             if (factory) {
@@ -94,30 +95,22 @@ function loadPigDrives() {
     })
 }
 
-function createWindow() {
-    win = new BrowserWindow({ width: 800, height: 600 })
+function init() {
     Menu.setApplicationMenu(null)
-    win.loadFile('index.html')
-
-    // win.webContents.openDevTools()
-
-    win.on('closed', () => {
-        win = null
-    })
+    api.createMainWindow()
+    api.createTray()
     loadPigDriveFactories()
     loadPigDrives()
 }
 
-app.on('ready', createWindow)
+app.on('ready', init)
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
-        app.quit()
+        api.exit()
     }
 })
 
 app.on('activate', () => {
-    if (win === null) {
-        createWindow()
-    }
+    api.createMainWindow()
 })

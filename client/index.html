@@ -97,7 +97,7 @@
                 }
             }
         })
-        ipcRenderer.on("DrivesUpdated", (event) => {
+        function loadDrives() {
             let drives = api.drives
             vm.drives.splice(0)
             for (let drive of drives) {
@@ -112,7 +112,9 @@
                     detail: drive.detail
                 })
             }
-        })
+        }
+        ipcRenderer.on("DrivesUpdated", loadDrives)
+        loadDrives()
     </script>
 </body>
 

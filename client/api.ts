@@ -1,5 +1,5 @@
 import { Url } from "url";
-import { BrowserWindow, app } from "electron";
+import { BrowserWindow, app, Menu, Tray, nativeImage } from "electron";
 import pathLib from "path"
 import fs from "fs"
 import * as requests from "request"
@@ -117,6 +117,7 @@ export abstract class PigDrive {
 
     showConfigWindow() {
         let configWindow = new BrowserWindow({ width: 800, height: 600 })
+        setupWindow(configWindow)
         configWindow.loadFile("config.html")
         configWindow.webContents.executeJavaScript(`var driveID=${this.id}`)
         // configWindow.webContents.openDevTools()
@@ -148,4 +149,66 @@ export interface PigDriveFactory {
     imageUrl: Url | string
     createNewPigDrive(args: CreateNewPigDriveArgs): Promise<PigDrive>
     loadFromConfig(id: number): Promise<PigDrive>
+}
+
+export let mainWindow: BrowserWindow | null
+export let tray: Tray | null
+
+export function createMainWindow() {
+    if (mainWindow != null) return;
+    mainWindow = new BrowserWindow({ width: 800, height: 600 })
+    setupWindow(mainWindow)
+    mainWindow.loadFile('index.html')
+
+    // win.webContents.openDevTools()
+
+    mainWindow.on('closed', () => {
+        mainWindow = null
+    })
+    mainWindow.on("close", (event) => {
+        if (mainWindow) mainWindow.hide()
+        event.preventDefault()
+    })
+}
+
+const imgs: any = {}
+
+export function getImage(path: string): nativeImage {
+    if (path in imgs) return imgs[path]
+    let img = nativeImage.createFromPath(path)
+    imgs[path] = img
+    return img
+}
+
+export function setupWindow(win: BrowserWindow) {
+    win.setIcon(getImage(pathLib.join(__dirname, "img/app_circle.ico")))
+}
+
+export function exit() {
+    if (tray) {
+        console.log("destory tray")
+        tray.destroy()
+        tray = null
+    }
+    app.exit()
+}
+
+export function createTray() {
+    if (tray) return;
+    tray = new Tray(getImage(pathLib.join(__dirname, "img/tray.ico")))
+    const contextMenu = Menu.buildFromTemplate([
+        { label: '显示主窗口', click: () => { if (mainWindow) mainWindow.show() } },
+        { label: '退出', click: exit }
+    ])
+    tray.setToolTip('PigDrive')
+    tray.setContextMenu(contextMenu)
+    tray.on("double-click", () => {
+        if (mainWindow) {
+            mainWindow.show()
+        }
+    })
+    tray.on('click', () => {
+        if (mainWindow)
+            mainWindow.hide()
+    })
 }

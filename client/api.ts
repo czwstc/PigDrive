@@ -182,6 +182,9 @@ export function getImage(path: string): nativeImage {
 
 export function setupWindow(win: BrowserWindow) {
     win.setIcon(getImage(pathLib.join(__dirname, "img/app_circle.ico")))
+    win.webContents.on('console-message', (event: Event, level: number, message: string, line: number, sourceId: string) => {
+        console.log(`* ${message} @title:${win.getTitle()} | url:${sourceId} | line:${line}`)
+    })
 }
 
 export function exit() {

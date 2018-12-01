@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>通用</title>
+    <script src="js/vue.min.js"></script>
+    <script type="text/javascript" src="js/iview.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/iview.css">
+</head>
+
+<body>
+    <div id="app" style="max-width:500px;padding-top: 16px;">
+        <i-form :model="commonConfig" :label-width="80">
+            <form-item label="名称">
+                <i-input v-model="commonConfig.name" placeholder="name"></i-input>
+            </form-item>
+            <form-item label="挂载路径">
+                <i-input v-model="commonConfig.mountPath" placeholder="mountPath"></i-input>
+            </form-item>
+            <form-item label="自动挂载">
+                <i-switch v-model="commonConfig.autoMount" size="large">
+                    <span slot="open">On</span>
+                    <span slot="close">Off</span>
+                </i-switch>
+            </form-item>
+            <form-item>
+                <i-button type="primary" @click="clickSave">保存</i-button>
+            </form-item>
+        </i-form>
+    </div>
+    <script type="text/javascript">
+        let drive = null
+        var electron = require("electron")
+        var ipcRenderer = electron.ipcRenderer
+        var vm = new Vue({
+            el: '#app',
+            data: {
+                commonConfig: {
+                    name: "",
+                    mountPath: "",
+                    autoMount: true
+                }
+            },
+            methods: {
+                clickSave: function () {
+                    let iid = setInterval(() => {
+                        if (drive) {
+                            clearInterval(iid)
+                            drive.commonConfig.name = vm.commonConfig.name
+                            drive.commonConfig.mountPath = vm.commonConfig.mountPath
+                            drive.commonConfig.autoMount = vm.commonConfig.autoMount
+                            ipcRenderer.send('updateDriveCommonConfig', driveID, drive.commonConfig)
+                            alert("保存成功")//TODO
+                        }
+                    })
+                }
+            }
+        })
+        let iid = setInterval(() => {
+            if (driveID) {
+                clearInterval(iid)
+                var remote = electron.remote
+                var api = remote.require("./api")
+                drive = api.PigDrive.findByID(driveID)
+                if (drive.commonConfig.name) vm.commonConfig.name = drive.commonConfig.name
+                if (drive.commonConfig.mountPath) vm.commonConfig.mountPath = drive.commonConfig.mountPath
+                if (drive.commonConfig.autoMount) vm.commonConfig.autoMount = true
+                else vm.commonConfig.autoMount = false
+            }
+        }, 100)
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>设置</title>
+    <link rel="stylesheet" type="text/css" href="css/config.css">
+    <script src="js/vue.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/element.css">
+    <script type="text/javascript" src="js/element-ui.js"></script>
+</head>
+
+<body>
+    <div id="main">
+        <el-menu default-active="common" class="configMenu" background-color="#545c64" text-color="#fff"
+            active-text-color="#ffd04b">
+            <el-menu-item index="common">
+                <span slot="title">通用</span>
+            </el-menu-item>
+
+        </el-menu>
+        <div id="right">
+            <webview src="common.html" frameborder="0" id="content" nodeintegration></webview>
+        </div>
+    </div>
+    <script type="text/javascript">
+        var vm = new Vue({
+            el: '#main',
+            data: {
+            },
+            methods: {
+            }
+        })
+        function setContentDriveID() {
+            let iid = setInterval(() => {
+                if (driveID) {
+                    clearInterval(iid)
+                    content = document.getElementById("content")
+                    content.executeJavaScript("var driveID = " + driveID)
+                    // content.openDevTools()
+                }
+            }, 100)
+        }
+        onload = () => {
+            setContentDriveID()
+        }
+    </script>
+</body>
+
+</html>
